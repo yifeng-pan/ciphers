@@ -1,2 +1,2 @@
 # Mixed Vigenère Cipher
-Based on "Cryptanalysis Using Nature-Inspired Optimization Algorithms" by Karel P. Bergmann.
+A description of the cipher can be found in "Cryptanalysis Using Nature-Inspired Optimization Algorithms" by Karel P. Bergmann, Chapter 5.

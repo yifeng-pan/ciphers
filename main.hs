@@ -123,3 +123,39 @@ attack_test2 xs key_length = (keys!!i, chis!!i)
         chis = map ((chisqr target_freqs) . freqs . decode xs) keys
         chis' = take 1000 chis
         i = position chis' (minimum chis')
+
+
+-- For Analysis by hand
+
+-- Breakdown Vigenere into Caesar
+caesar :: String -> Int -> Int -> String
+caesar xs size offset = [x | (x, i) <- zip xs [0..(length xs - 1)], i `mod` size == offset]
+
+freqs2 :: String -> [(Char, Float)]
+freqs2 xs = [(x, percent (count xs x) (length xs)) | x <- ['A'..'Z']]
+
+qsort :: [(Char, Float)] -> [(Char, Float)]
+qsort []     = []
+qsort (p:xs) = (qsort greater) ++ [p] ++ (qsort lesser)
+    where
+        lesser  = [x | x <- xs, snd x < snd p]
+        greater = [x | x <- xs, snd x >= snd p]
+
+check :: String -> Int -> Int -> [(Char, Float)]
+check xs size offset = take 5 (qsort (freqs2 (caesar xs size offset)))
+
+guess_alphabet :: [Char]
+guess_alphabet = [
+    'A', 'X', 'H', 'X', 'O', 'W',
+    'N', 'K', 'Z', 'R', 'C', 'X',
+    'X', 'M', 'B', 'X', 'X', 'X', 
+    'G', 'F', 'U', 'X', 'X', 'X', 
+    'V', 'E']
+
+-- TODO
+-- guess :: String -> String -> String
+-- guess xs = encode_v xs' ys'
+--     where 
+--         alphabet = guess_alphabet
+--         xs' = map (int2chr . position alphabet) xs
+--         ys' = [int2chr (26 - (chr2int y) `mod` 26) | y <- ys]
