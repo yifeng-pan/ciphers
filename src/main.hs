@@ -1,5 +1,11 @@
 import Data.Char
 
+-- Trying to crack this
+-- Key is 6 digits
+code :: String
+code = "UNFDNKEPBXPXNMFIOWHMIDNHHETEJVUNYIVOEXUFOCWVMDZRTBRETEVXYENEGPFOVQTLFRCVPBVUNQGHYMQFEKUIOVPKYUVFTXOEVXMNAJMTCWOEZRWBXLQVUNFATOYNOLVXNQQDZRXBAQVFGNJIPCZHFUNFGHQHFXGFASUVPHODZRYBFFMHCEOOKWEFIIZWBLAJTRENBHSRCXDZJFCJBVUDVGOIUZQBBMURNCGONEUNFXVXWXEFZIEJYIUSVRQKOWIQRIBYNGNDZRDGOLVQPGVXVWEWBMUREQUSVNWBYMVCVLGMOVVCMFERNDJVMTCVAEOAVCULNWZVFFJFCJOLQVPHMJQTHXEOVCDKQFOCXGPXWQVWOLVKCKTMOPUGXVZXZCFDNYRXAOMTUGKECFOGQTNFEQQKMWEHOKJORLJVBQVGUDCFMVVHCFYDAZOPGKYFUCWWASUDVBERZOUKIIQCGCAVQFZNFMJZHFJVMTCHTDPSEHNIUCNRQQVFZGYVCHPWBVWRWFIIJHPKBOUECXNZMVCBJVXVPHODZRYBJJWOENBHLIUBFHJWEXFDBZNGOLVQUGEIQVPHQHJXSKELCHDHJHVFGQUDVQNGQVVVPQNXVDRPBXBXTJOESRNRULCFYCAZMTUGBCVFYKIMBZNGOLVQGJFFMTWXELCHGQUDVQGJJXZWEGYDZXUXJKZVWBJFOFCJJXLXUAIIUVPKGMJHUGGLVQNHWIOHXHRQMWZGYVVQCEAOMOEMOEZRNLBDZRNGQFPDUNFAUHCKQFOCPKBOUVPKQIGVDGYVCFYNFOIWDEBVKHCFAZMYVBNMBVJGAHQHUNFJCQGFYFKHVLOLVQTCJVXHHXXIJRGVBVMOEMOLJWHMIDZRSKBQVCNGAJBXEJRONWAKEFPDCDUEWVPKXIVUTXHDNKEIPUCCDGYVCFYHMMXTUBBMOZCMBVMWRHMSQHUNFAFRNKNFYOEMOLVONPBAOWNFIDZQVRHLQDWXEEWPNKFVWOCVEXQFZVJDMDCYJSPXYKUFBSCFOLVSPHEXVREXAXCPECAJWOYNOMOPXROFPDUNFEMTCBOOQJCVFOBXBGQKMTCBVDMRZBAFUHCKNIUVVIFKNOEMJVMTCGOLVQZQYIIVTGQFOCUNFRNECXJVMTCYJSPXYKUDZRQEBXBRZMBPVCWFOLVEJQOLFXNDFAVHWXEQVUUFIICQMNJSUQCXRSNHCLVOMTCBQEJVPFIIWOCVEXXXIKXFKVVBASPOEMIMPDGHQHMTTALKJWIKUEWWBJGEJRGFOLVQVHEHFOEJMIUVVHOOQNAHQHEOBVBKVHXKRFTRBKUXIWDWAV"
+
+
 -- Sets a message to the correct format for this program
 format :: String -> String
 format [] = []
@@ -64,34 +70,56 @@ gen_alphabet xs = mod_key ++ [int2chr x | x <- [0..25], positions mod_key (int2c
 remove_dup :: String -> String
 remove_dup xs = [x | (x, i) <- zip xs [0..(length xs - 1)], positions (take i xs) x == []]
 
--- Frequency analysis TODO
 
--- target_freqs :: [Float]
--- target_freqs = [8.2,1.5,2.8,4.3,12.7,2.2,2.0,6.1,7.0,0.2,0.8,4.0,2.4,
---     6.7,7.5,1.9,0.1,6.0,6.3,9.1,2.8,1.0,2.4,0.2,2.0,0.1]
+-- Brute-force Frequency Analysis
 
--- freqs :: String -> [Float]
--- freqs xs = [percent (count xs x) (length xs) | x <- ['A'..'Z']]
+percent :: Int -> Int -> Float
+percent n m = (fromIntegral n / fromIntegral m) * 100
 
--- crack :: String -> String
--- crack xs = encode xs (-find_key xs)
+-- Count occurrences of a char
+count :: String -> Char -> Int
+count xs target = length [x | x <- xs, x == target]
 
--- find_key :: String -> Int
--- find_key xs = head (positions (minimum chis) chis)
---     where
---         chis = [chisqr (rotate (freqs xs) n) target_freqs | n <- [0..25]]
+-- Chi-Square Test
+chisqr :: [Float] -> [Float] -> Float
+chisqr target xs = sum [((x - y) ^ 2) / y | (x, y) <- zip xs target]
 
--- percent :: Int -> Int -> Float
--- percent n m = (fromIntegral n / fromIntegral m) * 100
+target_freqs :: [Float]
+target_freqs = [8.2,1.5,2.8,4.3,12.7,2.2,2.0,6.1,7.0,0.2,0.8,4.0,2.4,
+    6.7,7.5,1.9,0.1,6.0,6.3,9.1,2.8,1.0,2.4,0.2,2.0,0.1]
 
--- -- Count occurrences of a char in [char]
--- count :: String -> Char -> Int
--- count xs target = length [x | x <- xs, x == target]
+freqs :: String -> [Float]
+freqs xs = [percent (count xs x) (length xs) | x <- ['A'..'Z']]
 
--- -- Chi-Square Test
--- chisqr :: [Float] -> [Float] -> Float
--- chisqr xs target = sum [((x - y) ^ 2) / y | (x, y) <- zip xs target]
+-- BAD
+-- Generates all keys of length n
+gen_keys :: Int -> [String]
+gen_keys n 
+    | n == 1 = [[int2chr a] | a <- [0..25]]
+    | n == 2 = [[int2chr a] ++ [int2chr b] | a <- [0..25], b <- [0..25]]
+    | n == 3 = [[int2chr a] ++ [int2chr b] ++ [int2chr c]  | a <- [0..25], b <- [0..25], c <- [0..25]]
+    | n == 4 = [[int2chr a] ++ [int2chr b] ++ [int2chr c] ++ [int2chr d] | a <- [0..25], b <- [0..25], c <- [0..25], d <- [0..25]]
+    | n == 5 = [[int2chr a] ++ [int2chr b] ++ [int2chr c] ++ [int2chr d] ++ [int2chr e] | a <- [0..25], b <- [0..25], c <- [0..25], d <- [0..25], e <- [0..25]]
+    | n == 6 = [[int2chr a] ++ [int2chr b] ++ [int2chr c] ++ [int2chr d] ++ [int2chr e] ++ [int2chr f] | a <- [0..25], b <- [0..25], c <- [0..25], d <- [0..25], e <- [0..25], f <- [0..25]]
+    | otherwise = []
 
--- -- Rotate array by n
--- rotate :: [a] -> Int -> [a]
--- rotate xs n = drop n xs ++ take n xs
+attack :: String -> Int -> (String,Float)
+attack xs key_length = (keys!!i, chis!!i)
+    where 
+        keys = gen_keys key_length
+        chis = map ((chisqr target_freqs) . freqs . decode xs) keys
+        i = position chis (minimum chis)
+
+attack_test :: String -> Int -> [(String,Float)]
+attack_test xs key_length = [ (k, c) | (k, c) <- zip keys chis, c < 200]
+    where 
+        keys = gen_keys key_length
+        chis = map ((chisqr target_freqs) . freqs . decode xs) keys
+
+attack_test2 :: String -> Int -> (String,Float)
+attack_test2 xs key_length = (keys!!i, chis!!i)
+    where 
+        keys = gen_keys key_length
+        chis = map ((chisqr target_freqs) . freqs . decode xs) keys
+        chis' = take 1000 chis
+        i = position chis' (minimum chis')
