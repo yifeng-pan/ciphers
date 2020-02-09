@@ -6,6 +6,8 @@ code :: String
 code = "UNFDNKEPBXPXNMFIOWHMIDNHHETEJVUNYIVOEXUFOCWVMDZRTBRETEVXYENEGPFOVQTLFRCVPBVUNQGHYMQFEKUIOVPKYUVFTXOEVXMNAJMTCWOEZRWBXLQVUNFATOYNOLVXNQQDZRXBAQVFGNJIPCZHFUNFGHQHFXGFASUVPHODZRYBFFMHCEOOKWEFIIZWBLAJTRENBHSRCXDZJFCJBVUDVGOIUZQBBMURNCGONEUNFXVXWXEFZIEJYIUSVRQKOWIQRIBYNGNDZRDGOLVQPGVXVWEWBMUREQUSVNWBYMVCVLGMOVVCMFERNDJVMTCVAEOAVCULNWZVFFJFCJOLQVPHMJQTHXEOVCDKQFOCXGPXWQVWOLVKCKTMOPUGXVZXZCFDNYRXAOMTUGKECFOGQTNFEQQKMWEHOKJORLJVBQVGUDCFMVVHCFYDAZOPGKYFUCWWASUDVBERZOUKIIQCGCAVQFZNFMJZHFJVMTCHTDPSEHNIUCNRQQVFZGYVCHPWBVWRWFIIJHPKBOUECXNZMVCBJVXVPHODZRYBJJWOENBHLIUBFHJWEXFDBZNGOLVQUGEIQVPHQHJXSKELCHDHJHVFGQUDVQNGQVVVPQNXVDRPBXBXTJOESRNRULCFYCAZMTUGBCVFYKIMBZNGOLVQGJFFMTWXELCHGQUDVQGJJXZWEGYDZXUXJKZVWBJFOFCJJXLXUAIIUVPKGMJHUGGLVQNHWIOHXHRQMWZGYVVQCEAOMOEMOEZRNLBDZRNGQFPDUNFAUHCKQFOCPKBOUVPKQIGVDGYVCFYNFOIWDEBVKHCFAZMYVBNMBVJGAHQHUNFJCQGFYFKHVLOLVQTCJVXHHXXIJRGVBVMOEMOLJWHMIDZRSKBQVCNGAJBXEJRONWAKEFPDCDUEWVPKXIVUTXHDNKEIPUCCDGYVCFYHMMXTUBBMOZCMBVMWRHMSQHUNFAFRNKNFYOEMOLVONPBAOWNFIDZQVRHLQDWXEEWPNKFVWOCVEXQFZVJDMDCYJSPXYKUFBSCFOLVSPHEXVREXAXCPECAJWOYNOMOPXROFPDUNFEMTCBOOQJCVFOBXBGQKMTCBVDMRZBAFUHCKNIUVVIFKNOEMJVMTCGOLVQZQYIIVTGQFOCUNFRNECXJVMTCYJSPXYKUDZRQEBXBRZMBPVCWFOLVEJQOLFXNDFAVHWXEQVUUFIICQMNJSUQCXRSNHCLVOMTCBQEJVPFIIWOCVEXXXIKXFKVVBASPOEMIMPDGHQHMTTALKJWIKUEWWBJGEJRGFOLVQVHEHFOEJMIUVVHOOQNAHQHEOBVBKVHXKRFTRBKUXIWDWAV"
 
 
+-- General Functions
+
 -- Sets a message to the correct format for this program
 format :: String -> String
 format [] = []
@@ -26,6 +28,7 @@ chr2int :: Char -> Int
 chr2int c = ord c - ord 'A'
 
 int2chr :: Int -> Char
+-- int2chr n = chr ((ord 'A' + n) `mod` 26 + ord 'A')
 int2chr n = chr (ord 'A' + n)
 
 shift :: Char -> Int -> Char
@@ -39,9 +42,15 @@ shift2 c alphabet
     | isUpper c =int2chr (position alphabet c)
     | otherwise = c
 
--- Encodes xs using ys using Vigenere
-encode_v :: String -> String -> String
-encode_v xs ys = [shift x (key!!(i `mod` length key)) | (x, i) <- zip xs [0..(length xs - 1)]]
+remove_dup :: String -> String
+remove_dup xs = [x | (x, i) <- zip xs [0..(length xs - 1)], positions (take i xs) x == []]
+
+
+-- Vigenere
+
+-- Encodes xs using ys using Simple Vigenere
+encode_simple :: String -> String -> String
+encode_simple xs ys = [shift x (key!!(i `mod` length key)) | (x, i) <- zip xs [0..(length xs - 1)]]
     where 
         key = map chr2int ys
 
@@ -50,10 +59,10 @@ encode :: String -> String -> String
 encode xs ys = [alphabet!!(chr2int x) | x <- xs']
     where 
         alphabet = gen_alphabet ys
-        xs' = encode_v xs ys
+        xs' = encode_simple xs ys
 
 decode :: String -> String -> String
-decode xs ys = encode_v xs' ys'
+decode xs ys = encode_simple xs' ys'
     where 
         alphabet = gen_alphabet ys
         xs' = map (int2chr . position alphabet) xs
@@ -67,11 +76,8 @@ gen_alphabet xs = mod_key ++ [int2chr x | x <- [0..25], positions mod_key (int2c
     where
         mod_key = remove_dup xs
 
-remove_dup :: String -> String
-remove_dup xs = [x | (x, i) <- zip xs [0..(length xs - 1)], positions (take i xs) x == []]
 
-
--- Brute-force Frequency Analysis
+-- Brute-force Frequency Analysis for Mixed
 
 percent :: Int -> Int -> Float
 percent n m = (fromIntegral n / fromIntegral m) * 100
@@ -141,21 +147,45 @@ qsort (p:xs) = (qsort greater) ++ [p] ++ (qsort lesser)
         lesser  = [x | x <- xs, snd x < snd p]
         greater = [x | x <- xs, snd x >= snd p]
 
+-- Frequency Analysis check to get a lookup table
 check :: String -> Int -> Int -> [(Char, Float)]
 check xs size offset = take 5 (qsort (freqs2 (caesar xs size offset)))
 
 guess_alphabet :: [Char]
 guess_alphabet = [
-    'A', 'X', 'H', 'X', 'O', 'W',
-    'N', 'K', 'Z', 'R', 'C', 'X',
-    'X', 'M', 'B', 'X', 'X', 'X', 
-    'G', 'F', 'U', 'X', 'X', 'X', 
+    'A', '_', 'H', '_', 'O', 'W',
+    'N', 'K', 'Z', 'R', 'C', '_',
+    'X', 'M', 'B', '_', '_', '_', 
+    'G', 'F', 'U', '_', '_', '_', 
     'V', 'E']
 
--- TODO
--- guess :: String -> String -> String
--- guess xs = encode_v xs' ys'
---     where 
---         alphabet = guess_alphabet
---         xs' = map (int2chr . position alphabet) xs
---         ys' = [int2chr (26 - (chr2int y) `mod` 26) | y <- ys]
+guess_key :: String
+guess_key = "UMABGV"
+
+guess :: String -> String
+guess xs = [guess_alphabet!!((chr2int x - chr2int (guess_key!!(i `mod` length guess_key))) `mod` 26) | (x,i) <- zip xs [0..l]]
+    where
+        l = length xs - 1
+
+guess_with_key :: String -> String -> String
+guess_with_key xs key = [guess_alphabet!!((chr2int x - chr2int (key!!(i `mod` length key))) `mod` 26) | (x,i) <- zip xs [0..l]]
+    where
+        l = length xs - 1
+
+-- Temp
+format2 :: String -> String
+format2 [] = []
+format2 xs = take 6 xs ++ " " ++ format2 (drop 6 xs)
+
+guess' :: String -> String
+guess' xs = format2 (guess xs)
+
+guess_with_key' :: String -> String -> String
+guess_with_key' xs key = format2 (guess_with_key xs key)
+
+
+compare_guess :: String -> String -> String -> String
+compare_guess xs key1 key2 = [if a == b then a else '_' | (a, b) <- zip guess1 guess2]
+    where 
+        guess1 = guess_with_key xs key1
+        guess2 = guess_with_key xs key2
