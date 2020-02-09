@@ -152,27 +152,33 @@ check :: String -> Int -> Int -> [(Char, Float)]
 check xs size offset = take 5 (qsort (freqs2 (caesar xs size offset)))
 
 guess_alphabet :: [Char]
-guess_alphabet = [
-    'A', '_', 'H', '_', 'O', 'W',
-    'N', 'K', 'Z', 'R', 'C', '_',
-    'X', 'M', 'B', '_', '_', '_', 
-    'G', 'F', 'U', '_', '_', '_', 
-    'V', 'E']
+-- guess_alphabet = [
+--     'A', '_', 'H', '_', 'O', 'W',
+--     'N', 'K', 'Z', 'R', 'C', '_',
+--     'X', 'M', 'B', '_', '_', '_', 
+--     'G', 'F', 'U', '_', '_', '_', 
+--     'V', 'E']
+guess_alphabet = "V_____O___ZR___MB____F____"
 
-guess_key :: String
-guess_key = "UMABGV"
+guess_offset :: String
+guess_offset = "__Y_ET"
 
 guess :: String -> String
-guess xs = [guess_alphabet!!((chr2int x - chr2int (guess_key!!(i `mod` length guess_key))) `mod` 26) | (x,i) <- zip xs [0..l]]
+guess xs = guess_with_offset xs guess_offset
+
+-- BAD
+guess_with_offset :: String -> String -> String
+guess_with_offset xs offset = [if (positions guess_alphabet x) == [] then '_' else int2chr(((position guess_alphabet x) + chr2int(offset!!(i `mod` l'))) `mod` 26) | (x,i) <- zip xs [0..l]]
     where
         l = length xs - 1
+        l' = length offset
 
-guess_with_key :: String -> String -> String
-guess_with_key xs key = [guess_alphabet!!((chr2int x - chr2int (key!!(i `mod` length key))) `mod` 26) | (x,i) <- zip xs [0..l]]
-    where
-        l = length xs - 1
+compare_guess :: String -> String -> String -> String
+compare_guess xs offset1 offset2 = [if a == b then a else '_' | (a, b) <- zip guess1 guess2]
+    where 
+        guess1 = guess_with_offset xs offset1
+        guess2 = guess_with_offset xs offset2
 
--- Temp
 format2 :: String -> String
 format2 [] = []
 format2 xs = take 6 xs ++ " " ++ format2 (drop 6 xs)
@@ -180,12 +186,8 @@ format2 xs = take 6 xs ++ " " ++ format2 (drop 6 xs)
 guess' :: String -> String
 guess' xs = format2 (guess xs)
 
-guess_with_key' :: String -> String -> String
-guess_with_key' xs key = format2 (guess_with_key xs key)
+guess_with_offset' :: String -> String -> String
+guess_with_offset' xs offset = format2 (guess_with_offset xs offset)
 
-
-compare_guess :: String -> String -> String -> String
-compare_guess xs key1 key2 = [if a == b then a else '_' | (a, b) <- zip guess1 guess2]
-    where 
-        guess1 = guess_with_key xs key1
-        guess2 = guess_with_key xs key2
+compare_guess' :: String -> String -> String -> String
+compare_guess' xs offset1 offset2 = format2 (compare_guess xs offset1 offset2)
