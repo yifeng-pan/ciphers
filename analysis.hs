@@ -1,11 +1,6 @@
 import Data.Char
 
-
--- Trying to crack this
--- Key is 6 digits
-code :: String
-code = "UNFDNKEPBXPXNMFIOWHMIDNHHETEJVUNYIVOEXUFOCWVMDZRTBRETEVXYENEGPFOVQTLFRCVPBVUNQGHYMQFEKUIOVPKYUVFTXOEVXMNAJMTCWOEZRWBXLQVUNFATOYNOLVXNQQDZRXBAQVFGNJIPCZHFUNFGHQHFXGFASUVPHODZRYBFFMHCEOOKWEFIIZWBLAJTRENBHSRCXDZJFCJBVUDVGOIUZQBBMURNCGONEUNFXVXWXEFZIEJYIUSVRQKOWIQRIBYNGNDZRDGOLVQPGVXVWEWBMUREQUSVNWBYMVCVLGMOVVCMFERNDJVMTCVAEOAVCULNWZVFFJFCJOLQVPHMJQTHXEOVCDKQFOCXGPXWQVWOLVKCKTMOPUGXVZXZCFDNYRXAOMTUGKECFOGQTNFEQQKMWEHOKJORLJVBQVGUDCFMVVHCFYDAZOPGKYFUCWWASUDVBERZOUKIIQCGCAVQFZNFMJZHFJVMTCHTDPSEHNIUCNRQQVFZGYVCHPWBVWRWFIIJHPKBOUECXNZMVCBJVXVPHODZRYBJJWOENBHLIUBFHJWEXFDBZNGOLVQUGEIQVPHQHJXSKELCHDHJHVFGQUDVQNGQVVVPQNXVDRPBXBXTJOESRNRULCFYCAZMTUGBCVFYKIMBZNGOLVQGJFFMTWXELCHGQUDVQGJJXZWEGYDZXUXJKZVWBJFOFCJJXLXUAIIUVPKGMJHUGGLVQNHWIOHXHRQMWZGYVVQCEAOMOEMOEZRNLBDZRNGQFPDUNFAUHCKQFOCPKBOUVPKQIGVDGYVCFYNFOIWDEBVKHCFAZMYVBNMBVJGAHQHUNFJCQGFYFKHVLOLVQTCJVXHHXXIJRGVBVMOEMOLJWHMIDZRSKBQVCNGAJBXEJRONWAKEFPDCDUEWVPKXIVUTXHDNKEIPUCCDGYVCFYHMMXTUBBMOZCMBVMWRHMSQHUNFAFRNKNFYOEMOLVONPBAOWNFIDZQVRHLQDWXEEWPNKFVWOCVEXQFZVJDMDCYJSPXYKUFBSCFOLVSPHEXVREXAXCPECAJWOYNOMOPXROFPDUNFEMTCBOOQJCVFOBXBGQKMTCBVDMRZBAFUHCKNIUVVIFKNOEMJVMTCGOLVQZQYIIVTGQFOCUNFRNECXJVMTCYJSPXYKUDZRQEBXBRZMBPVCWFOLVEJQOLFXNDFAVHWXEQVUUFIICQMNJSUQCXRSNHCLVOMTCBQEJVPFIIWOCVEXXXIKXFKVVBASPOEMIMPDGHQHMTTALKJWIKUEWWBJGEJRGFOLVQVHEHFOEJMIUVVHOOQNAHQHEOBVBKVHXKRFTRBKUXIWDWAV"
-
+-- Original text: "As he pulled into the parking slot near the edge of the huge, asphalt lot an empty beer can crunched under one of the front wheels of the car. He turned off his lights and surveyed the area. Yes, this was a good spot; he had a clear view of each automobile turning from the lone entrance driveway into the lot, where it had to slow almost to a stop under the bright, mercury-vapor lamp there, and he also was well situated for seeing which row of the lot each vehicle eventually turned into. He pulled his coat more snugly around his neck, turned the radio dial until he found an FM station which was broadcasting his favorite Schubert sonata, and settled down to wait."
 example_text :: String
 example_text = "ASHEPULLEDINTOTHEPARKINGSLOTNEARTHEEDGEOFTHEHUGEASPHALTLOTANEMPTYBEERCANCRUNCHEDUNDERONEOFTHEFRONTWHEELSOFTHECARHETURNEDOFFHISLIGHTSANDSURVEYEDTHEAREAYESTHISWASAGOODSPOTHEHADACLEARVIEWOFEACHAUTOMOBILETURNINGFROMTHELONEENTRANCEDRIVEWAYINTOTHELOTWHEREITHADTOSLOWALMOSTTOASTOPUNDERTHEBRIGHTMERCURYVAPORLAMPTHEREANDHEALSOWASWELLSITUATEDFORSEEINGWHICHROWOFTHELOTEACHVEHICLEEVENTUALLYTURNEDINTOHEPULLEDHISCOATMORESNUGLYAROUNDHISNECKTURNEDTHERADIODIALUNTILHEFOUNDANFMSTATIONWHICHWASBROADCASTINGHISFAVORITESCHUBERTSONATAANDSETTLEDDOWNTOWAIT"
 
@@ -35,15 +30,6 @@ format_read xs n = take n xs' ++ " " ++ format_read (drop n xs') n
     where 
         xs' = xs
 
--- Formats a message for for a faster attack
-format_attack :: String -> [Int]
-format_attack xs = map chr2int (format xs)
-
-attack2read :: [Int] -> Int -> String
-attack2read xs = format_read xs'
-    where
-        xs' = map int2chr xs
-
 
 -- Returns the positions of an element
 positions :: Eq a => [a] -> a -> [Int]
@@ -63,19 +49,13 @@ find :: Eq a => [a] -> a -> Bool
 find xs x = not (positions xs x == [])
 
 percent :: Int -> Int -> Float
-percent n m = (fromIntegral n / fromIntegral m)
+percent n m = (fromIntegral n / fromIntegral m) * 100
 
 
 shift :: Char -> Int -> Char
 shift c n
     | isUpper c = int2chr((chr2int c + n) `mod` 26)
     | otherwise = c
-
--- Second part of shift used for the Mixed Vigenère
--- shift2 :: Char -> [Char] -> Char
--- shift2 c alphabet
---     | isUpper c =int2chr (position alphabet c)
---     | otherwise = c
 
 remove_dup :: String -> String
 remove_dup xs = [x | (x, i) <- zip xs [0..(length xs - 1)], positions (take i xs) x == []]
@@ -103,9 +83,6 @@ decode xs ys = encode_simple xs' ys'
         xs' = map (int2chr . position alphabet) xs
         ys' = [int2chr (26 - (chr2int y) `mod` 26) | y <- ys]
 
-default_alphabet :: [Char]
-default_alphabet = map int2chr [0..25]
-
 gen_alphabet :: String -> [Char]
 gen_alphabet xs = mod_key ++ [int2chr x | x <- [0..25], positions mod_key (int2chr x) == []]
     where
@@ -113,7 +90,6 @@ gen_alphabet xs = mod_key ++ [int2chr x | x <- [0..25], positions mod_key (int2c
 
 
 -- For Analysis by hand
--- TODO
 
 -- Breakdown Vigenere into Caesar using a key length and an offset
 caesar :: String -> Int -> Int -> String
@@ -134,35 +110,20 @@ check :: String -> Int -> Int -> [(Char, Float)]
 check xs size offset = take 5 (qsort (freqs (caesar xs size offset)))
 
 guess_alphabet :: [Char]
--- guess_alphabet = "V_____O____R___MB____F____"
-guess_alphabet = "V__________R___M__________"
+guess_alphabet = "____E_____________________"
 
--- guess_offset :: String
--- guess_offset = "__Y_ET"
+guess_offset :: String
+guess_offset = "______"
 
 guess_alphabets :: [String]
 guess_alphabets = [
-        "____C_____________________",
+        "____E_____________________",
         "__________________________",
-        "____O_____________________",
         "__________________________",
-        "____V_____________________",
+        "__________________________",
+        "__________________________",
         "__________________________"
     ]
-
--- TEMP
--- [(’C’,13.513513),(’E’,10.810811),(’U’,9.009008),(’N’,8.558558),(’V’,7.207207)]
--- [(’G’,11.711712),(’K’,11.261261),(’H’,9.009008),(’B’,8.558558),(’X’,8.108108)]
--- [(’O’,12.162163),(’F’,10.810811),(’B’,9.459459),(’A’,8.558558),(’J’,8.108108)]
--- [(’I’,9.90991),(’V’,9.459459),(’L’,9.459459),(’D’,9.459459),(’F’,9.009008)]
--- [(’V’,16.742083),(’M’,9.954751),(’Z’,8.144796),(’U’,7.692308),(’O’,7.2398195)]
--- [(’R’,10.859729),(’V’,9.954751),(’F’,8.597285),(’W’,8.144796),(’Q’,8.144796)]
-        -- "____C______________E______",
-        -- "__________________________",
-        -- "____O______________F______",
-        -- "__________________________",
-        -- "____V__________R___M______",
-        -- "____R___M__________V______"
 
 guess :: String -> String
 guess xs = [if (positions (alphabets!!(i `mod` l')) x) == [] then '_' else int2chr(position (alphabets!!(i `mod` l')) x) | (x,i) <- zip xs [0..l]]
@@ -193,5 +154,5 @@ guess_with_offset' xs offset n = format_read (guess_with_offset xs offset) n
 compare_guess' :: String -> String -> String -> Int -> String
 compare_guess' xs offset1 offset2 n = format_read (compare_guess xs offset1 offset2) n 
 
-add_guess :: String -> String -> String
-add_guess xs ys = [if x == '_' then y else x | (x,y) <- zip xs ys]
+-- add_guess :: String -> String -> String
+-- add_guess xs ys = [if x == '_' then y else x | (x,y) <- zip xs ys]
