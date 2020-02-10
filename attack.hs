@@ -41,7 +41,7 @@ format_read :: String -> Int -> String
 format_read [] _ = []
 format_read xs n = take n xs' ++ " " ++ format_read (drop n xs') n
     where 
-        xs' = format xs
+        xs' = xs
 
 -- Formats a message for for a faster attack
 format_attack :: String -> [Int]
@@ -143,9 +143,27 @@ attack xs y = (ys!!i, zs!!i)
         zs = map ((chisqr target_freqs) . freqs . decode xs) ys
         i = position zs (minimum zs)
 
--- The attack itself, given a key length y on a message xs
 attack_test :: [Int] -> Int -> [([Int],Float)]
-attack_test xs y = [(y', z) | (y', z) <- zip ys zs, z < 100]
+attack_test xs y = [(y', z) | (y', z) <- zip ys zs, z < 40]
     where 
         ys = gen_keys y
         zs = map ((chisqr target_freqs) . freqs . decode xs) ys
+
+attack_test2 :: [Int] -> Int -> [([Int],Float)]
+attack_test2 xs y = [(y', z) | (y', z) <- zip ys zs, z < 40]
+    where 
+        ys = drop (26^5) (gen_keys y)
+        zs = map ((chisqr target_freqs) . freqs . decode xs) ys
+
+
+attack_test3 :: [Int] -> Int -> [(Float, ([Int], [Int]))]
+attack_test3 xs y = [(z, yx) | (z, yx) <- zip zs yxs, z < 100]
+-- attack_test3 xs y = [(z, yx) | (z, yx) <- zip zs yxs]
+    where 
+        ys = drop (26^5) (gen_keys y)
+        -- ys = take (26^4) (gen_keys y)
+        xs' = [decode xs y | y <- ys]
+        yxs = [(ys!!i, xs'!!i) | i <- [0..], (xs'!!i)!!0 == 4, (xs'!!i)!!2 == 4, (xs'!!i)!!18 == 4, (xs'!!i)!!32 == 4]
+        zs = map ((chisqr target_freqs) . freqs) (map snd yxs)
+
+-- attack_test3 (drop (1331 - 51) code') 6

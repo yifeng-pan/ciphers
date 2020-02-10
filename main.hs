@@ -33,7 +33,7 @@ format_read :: String -> Int -> String
 format_read [] _ = []
 format_read xs n = take n xs' ++ " " ++ format_read (drop n xs') n
     where 
-        xs' = format xs
+        xs' = xs
 
 -- Formats a message for for a faster attack
 format_attack :: String -> [Int]
@@ -142,12 +142,12 @@ guess_alphabet = "V__________R___M__________"
 
 guess_alphabets :: [String]
 guess_alphabets = [
-        "____U______________C______",
+        "____C_____________________",
         "__________________________",
-        "____O______________F______",
-        "_________________L________",
-        "____V__________R__TM______",
-        "____R__TM__________V______"
+        "____O_____________________",
+        "__________________________",
+        "____V_____________________",
+        "__________________________"
     ]
 
 -- TEMP
