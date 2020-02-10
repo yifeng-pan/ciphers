@@ -6,6 +6,7 @@ code :: String
 code = "UNFDNKEPBXPXNMFIOWHMIDNHHETEJVUNYIVOEXUFOCWVMDZRTBRETEVXYENEGPFOVQTLFRCVPBVUNQGHYMQFEKUIOVPKYUVFTXOEVXMNAJMTCWOEZRWBXLQVUNFATOYNOLVXNQQDZRXBAQVFGNJIPCZHFUNFGHQHFXGFASUVPHODZRYBFFMHCEOOKWEFIIZWBLAJTRENBHSRCXDZJFCJBVUDVGOIUZQBBMURNCGONEUNFXVXWXEFZIEJYIUSVRQKOWIQRIBYNGNDZRDGOLVQPGVXVWEWBMUREQUSVNWBYMVCVLGMOVVCMFERNDJVMTCVAEOAVCULNWZVFFJFCJOLQVPHMJQTHXEOVCDKQFOCXGPXWQVWOLVKCKTMOPUGXVZXZCFDNYRXAOMTUGKECFOGQTNFEQQKMWEHOKJORLJVBQVGUDCFMVVHCFYDAZOPGKYFUCWWASUDVBERZOUKIIQCGCAVQFZNFMJZHFJVMTCHTDPSEHNIUCNRQQVFZGYVCHPWBVWRWFIIJHPKBOUECXNZMVCBJVXVPHODZRYBJJWOENBHLIUBFHJWEXFDBZNGOLVQUGEIQVPHQHJXSKELCHDHJHVFGQUDVQNGQVVVPQNXVDRPBXBXTJOESRNRULCFYCAZMTUGBCVFYKIMBZNGOLVQGJFFMTWXELCHGQUDVQGJJXZWEGYDZXUXJKZVWBJFOFCJJXLXUAIIUVPKGMJHUGGLVQNHWIOHXHRQMWZGYVVQCEAOMOEMOEZRNLBDZRNGQFPDUNFAUHCKQFOCPKBOUVPKQIGVDGYVCFYNFOIWDEBVKHCFAZMYVBNMBVJGAHQHUNFJCQGFYFKHVLOLVQTCJVXHHXXIJRGVBVMOEMOLJWHMIDZRSKBQVCNGAJBXEJRONWAKEFPDCDUEWVPKXIVUTXHDNKEIPUCCDGYVCFYHMMXTUBBMOZCMBVMWRHMSQHUNFAFRNKNFYOEMOLVONPBAOWNFIDZQVRHLQDWXEEWPNKFVWOCVEXQFZVJDMDCYJSPXYKUFBSCFOLVSPHEXVREXAXCPECAJWOYNOMOPXROFPDUNFEMTCBOOQJCVFOBXBGQKMTCBVDMRZBAFUHCKNIUVVIFKNOEMJVMTCGOLVQZQYIIVTGQFOCUNFRNECXJVMTCYJSPXYKUDZRQEBXBRZMBPVCWFOLVEJQOLFXNDFAVHWXEQVUUFIICQMNJSUQCXRSNHCLVOMTCBQEJVPFIIWOCVEXXXIKXFKVVBASPOEMIMPDGHQHMTTALKJWIKUEWWBJGEJRGFOLVQVHEHFOEJMIUVVHOOQNAHQHEOBVBKVHXKRFTRBKUXIWDWAV"
 
 
+
 -- General Functions
 
 -- Sets a message to the correct format for this program
@@ -106,7 +107,7 @@ gen_keys n
     | n == 3 = [[int2chr a] ++ [int2chr b] ++ [int2chr c]  | a <- [0..25], b <- [0..25], c <- [0..25]]
     | n == 4 = [[int2chr a] ++ [int2chr b] ++ [int2chr c] ++ [int2chr d] | a <- [0..25], b <- [0..25], c <- [0..25], d <- [0..25]]
     | n == 5 = [[int2chr a] ++ [int2chr b] ++ [int2chr c] ++ [int2chr d] ++ [int2chr e] | a <- [0..25], b <- [0..25], c <- [0..25], d <- [0..25], e <- [0..25]]
-    | n == 6 = [[int2chr a] ++ [int2chr b] ++ [int2chr c] ++ [int2chr d] ++ [int2chr e] ++ [int2chr f] | a <- [0..25], b <- [0..25], c <- [0..25], d <- [0..25], e <- [0..25], f <- [0..25]]
+    -- | n == 6 = ["Z" ++ [int2chr b] ++ [int2chr c] ++ [int2chr d] ++ [int2chr e] ++ [int2chr f] | b <- [0..25], c <- [0..25], d <- [0..25], e <- [0..25], f <- [0..25]]
     | otherwise = []
 
 attack :: String -> Int -> (String,Float)
@@ -117,7 +118,7 @@ attack xs key_length = (keys!!i, chis!!i)
         i = position chis (minimum chis)
 
 attack_test :: String -> Int -> [(String,Float)]
-attack_test xs key_length = [ (k, c) | (k, c) <- zip keys chis, c < 200]
+attack_test xs key_length = [ (k, c) | (k, c) <- zip keys chis, c < 50]
     where 
         keys = gen_keys key_length
         chis = map ((chisqr target_freqs) . freqs . decode xs) keys
@@ -127,7 +128,7 @@ attack_test2 xs key_length = (keys!!i, chis!!i)
     where 
         keys = gen_keys key_length
         chis = map ((chisqr target_freqs) . freqs . decode xs) keys
-        chis' = take 1000 chis
+        chis' = take (24 ^ 3) chis
         i = position chis' (minimum chis')
 
 
@@ -152,19 +153,36 @@ check :: String -> Int -> Int -> [(Char, Float)]
 check xs size offset = take 5 (qsort (freqs2 (caesar xs size offset)))
 
 guess_alphabet :: [Char]
--- guess_alphabet = [
---     'A', '_', 'H', '_', 'O', 'W',
---     'N', 'K', 'Z', 'R', 'C', '_',
---     'X', 'M', 'B', '_', '_', '_', 
---     'G', 'F', 'U', '_', '_', '_', 
---     'V', 'E']
-guess_alphabet = "V_____O___ZR___MB____F____"
+-- guess_alphabet = "V_____O____R___MB____F____"
+guess_alphabet = "V__________R___M__________"
 
-guess_offset :: String
-guess_offset = "__Y_ET"
+-- guess_offset :: String
+-- guess_offset = "__Y_ET"
+
+guess_alphabets :: [String]
+guess_alphabets = [
+        "U___C_________N____E______",
+        "__ZR__TM__________V_______",
+        "____O_________B____F______",
+        "___________P_____L________",
+        "____V_________ZR__TM______",
+        "___ZR__TM__________V______"
+    ]
+
+-- TEMP
+-- [(’C’,13.513513),(’E’,10.810811),(’U’,9.009008),(’N’,8.558558),(’V’,7.207207)]
+-- [(’G’,11.711712),(’K’,11.261261),(’H’,9.009008),(’B’,8.558558),(’X’,8.108108)]
+-- [(’O’,12.162163),(’F’,10.810811),(’B’,9.459459),(’A’,8.558558),(’J’,8.108108)]
+-- [(’I’,9.90991),(’V’,9.459459),(’L’,9.459459),(’D’,9.459459),(’F’,9.009008)]
+-- [(’V’,16.742083),(’M’,9.954751),(’Z’,8.144796),(’U’,7.692308),(’O’,7.2398195)]
+-- [(’R’,10.859729),(’V’,9.954751),(’F’,8.597285),(’W’,8.144796),(’Q’,8.144796)]
 
 guess :: String -> String
-guess xs = guess_with_offset xs guess_offset
+guess xs = [if (positions (alphabets!!(i `mod` l')) x) == [] then '_' else int2chr(position (alphabets!!(i `mod` l')) x) | (x,i) <- zip xs [0..l]]
+    where
+        alphabets = guess_alphabets
+        l = length xs - 1
+        l' = length alphabets
 
 -- BAD
 guess_with_offset :: String -> String -> String
@@ -174,20 +192,23 @@ guess_with_offset xs offset = [if (positions guess_alphabet x) == [] then '_' el
         l' = length offset
 
 compare_guess :: String -> String -> String -> String
-compare_guess xs offset1 offset2 = [if a == b then a else '_' | (a, b) <- zip guess1 guess2]
+compare_guess xs offset1 offset2 = [if a == b then b else '_' | (a, b) <- zip guess1 guess2]
     where 
         guess1 = guess_with_offset xs offset1
         guess2 = guess_with_offset xs offset2
 
-format2 :: String -> String
-format2 [] = []
-format2 xs = take 6 xs ++ " " ++ format2 (drop 6 xs)
+format2 :: String -> Int -> String
+format2 [] _ = []
+format2 xs n = take n xs ++ " " ++ format2 (drop n xs) n
 
-guess' :: String -> String
-guess' xs = format2 (guess xs)
+guess' :: String -> Int -> String
+guess' xs n = format2 (guess xs) n
 
-guess_with_offset' :: String -> String -> String
-guess_with_offset' xs offset = format2 (guess_with_offset xs offset)
+guess_with_offset' :: String -> String -> Int -> String
+guess_with_offset' xs offset n = format2 (guess_with_offset xs offset) n
 
-compare_guess' :: String -> String -> String -> String
-compare_guess' xs offset1 offset2 = format2 (compare_guess xs offset1 offset2)
+compare_guess' :: String -> String -> String -> Int -> String
+compare_guess' xs offset1 offset2 n = format2 (compare_guess xs offset1 offset2) n 
+
+add_guess :: String -> String -> String
+add_guess xs ys = [if x == '_' then y else x | (x,y) <- zip xs ys]
