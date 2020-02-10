@@ -19,7 +19,7 @@ Example:
 
 *Then solve using the guess functions*
 ```
-"check" can also be used to guess the key length aswell.
+"check" can be used to guess the key length aswell.
 
 ## Brute-force
 Load "attack.hs" for a brute-force attack using frequency analysis.
